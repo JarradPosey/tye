@@ -42,7 +42,7 @@ namespace Microsoft.Tye.Extensions.Dapr
                         continue;
                     }
 
-                    var httpBinding = project.Bindings.FirstOrDefault(b => b.Protocol == "http");
+                    var httpBinding = project.Bindings.FirstOrDefault(b => b.Protocol == (serviceConfiguration?.AppSsl ?? extensionConfiguration?.AppSsl ?? false ? "https" : "http"));
 
                     if (httpBinding == null && project.Bindings.Count == 1 && project.Bindings[0].Protocol == null)
                     {
