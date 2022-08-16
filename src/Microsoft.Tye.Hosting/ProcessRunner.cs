@@ -292,6 +292,14 @@ namespace Microsoft.Tye.Hosting
                         copiedArgs = copiedArgs.Replace($"%{env.Key}%", env.Value);
                     }
 
+                    while (environment.Count(kvp => kvp.Value.Contains("${env:")) > 0)
+                    {
+                        foreach (var env in environment.Where(kvp => kvp.Value.Contains("${env:")))
+                        {
+                            environment[env.Key] = TokenReplacement.ReplaceValues(env.Value, environment);
+                        }
+                    }
+
                     _logger.LogInformation("Launching service {ServiceName}: {ExePath} {args}", replica, path, copiedArgs);
 
                     try

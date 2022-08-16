@@ -12,6 +12,23 @@ namespace Microsoft.Tye.Hosting
 {
     internal static class TokenReplacement
     {
+        public static string ReplaceValues(string text, IDictionary<string, string> env)
+        {
+            var tokens = GetTokens(text);
+            foreach (var token in tokens)
+            {
+                 var replacement = ResolveToken(token, env);
+                if (replacement is null)
+                {
+                    throw new InvalidOperationException($"No available substitutions found for token '{token}'.");
+                }
+
+                text = text.Replace(token, replacement);
+            }
+
+            return text;
+        }
+
         public static string ReplaceValues(string text, EffectiveBinding binding, List<EffectiveBinding> bindings)
         {
             var tokens = GetTokens(text);
@@ -57,6 +74,20 @@ namespace Microsoft.Tye.Hosting
             }
 
             return tokens;
+        }
+
+        private static string? ResolveToken(string token, IDictionary<string, string> env)
+        {
+            var keys = token[2..^1].Split(':');
+            if (keys.Length == 2 && keys[0] == "env")
+            {
+                if (env.TryGetValue(keys[1], out var value))
+                {
+                    return value;
+                }
+            }
+
+            return default;
         }
 
         private static string? ResolveToken(string token, EffectiveBinding binding, List<EffectiveBinding> bindings)
